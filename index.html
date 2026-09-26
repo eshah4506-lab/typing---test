@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpeedType</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #12141a;
+    color: #e8e8e8;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 25px 18px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: bold;
+    color: #f0b90b;
+}
+
+.timer {
+    font-size: 22px;
+    color: #f0b90b;
+}
+
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 30px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat span {
+    display: block;
+    font-size: 14px;
+    color: #888;
+}
+
+.stat strong {
+    font-size: 25px;
+    color: #f0b90b;
+}
+
+.words {
+    background: #1b1e26;
+    border-radius: 12px;
+    padding: 25px;
+    font-size: 24px;
+    line-height: 1.8;
+    color: #777;
+    min-height: 180px;
+    margin-bottom: 20px;
+}
+
+#input {
+    width: 100%;
+    height: 130px;
+    resize: none;
+    border: 2px solid #333844;
+    border-radius: 10px;
+    background: #191c23;
+    color: white;
+    padding: 15px;
+    font-size: 20px;
+    outline: none;
+}
+
+#input:focus {
+    border-color: #f0b90b;
+}
+
+button {
+    display: block;
+    margin: 25px auto;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    background: #f0b90b;
+    color: #111;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:active {
+    transform: scale(0.96);
+}
+
+.result {
+    display: none;
+    text-align: center;
+    background: #1b1e26;
+    padding: 25px;
+    border-radius: 12px;
+}
+
+.result h2 {
+    color: #f0b90b;
+}
+
+.result p {
+    font-size: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+    <div class="logo">⚡ SpeedType</div>
+    <div class="timer" id="timer">30s</div>
+</header>
+
+<div class="stats">
+    <div class="stat">
+        <span>WPM</span>
+        <strong id="wpm">0</strong>
+    </div>
+
+    <div class="stat">
+        <span>Accuracy</span>
+        <strong id="accuracy">100%</strong>
+    </div>
+
+    <div class="stat">
+        <span>Characters</span>
+        <strong id="characters">0</strong>
+    </div>
+</div>
+
+<div class="words" id="text">
+    The quick brown fox jumps over the lazy dog. 
+    Technology makes our life easier and faster. 
+    Practice typing every day to improve your speed and accuracy.
+</div>
+
+<textarea
+    id="input"
+    placeholder="Start typing here..."
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false">
+</textarea>
+
+<button onclick="restart()">↻ Restart</button>
+
+<div class="result" id="result">
+    <h2>Test Complete!</h2>
+    <p>Your Speed: <b id="finalWpm">0</b> WPM</p>
+    <p>Your Accuracy: <b id="finalAccuracy">0%</b></p>
+    <button onclick="restart()">Try Again</button>
+</div>
+
+</div>
+
+<script>
+
+const input = document.getElementById("input");
+const timerDisplay = document.getElementById("timer");
+const wpmDisplay = document.getElementById("wpm");
+const accuracyDisplay = document.getElementById("accuracy");
+const charactersDisplay = document.getElementById("characters");
+const result = document.getElementById("result");
+
+let time = 30;
+let timer = null;
+let started = false;
+
+input.addEventListener("input", function() {
+
+    if (!started) {
+        started = true;
+        timer = setInterval(updateTimer, 1000);
+    }
+
+    calculateStats();
+});
+
+function updateTimer() {
+
+    time--;
+
+    timerDisplay.textContent = time + "s";
+
+    calculateStats();
+
+    if (time <= 0) {
+        finishTest();
+    }
+}
+
+function calculateStats() {
+
+    const typed = input.value;
+    const text = document.getElementById("text").textContent.trim();
+
+    charactersDisplay.textContent = typed.length;
+
+    let correct = 0;
+
+    for (let i = 0; i < typed.length; i++) {
+        if (typed[i] === text[i]) {
+            correct++;
+        }
+    }
+
+    let accuracy = typed.length > 0
+        ? Math.round((correct / typed.length) * 100)
+        : 100;
+
+    accuracyDisplay.textContent = accuracy + "%";
+
+    let elapsed = 30 - time;
+
+    if (elapsed > 0) {
+        let words = correct / 5;
+        let wpm = Math.round(words / (elapsed / 60));
+
+        wpmDisplay.textContent = wpm;
+    }
+}
+
+function finishTest() {
+
+    clearInterval(timer);
+
+    input.disabled = true;
+
+    let wpm = wpmDisplay.textContent;
+    let accuracy = accuracyDisplay.textContent;
+
+    document.getElementById("finalWpm").textContent = wpm;
+    document.getElementById("finalAccuracy").textContent = accuracy;
+
+    result.style.display = "block";
+}
+
+function restart() {
+
+    clearInterval(timer);
+
+    time = 30;
+    started = false;
+
+    timerDisplay.textContent = "30s";
+    wpmDisplay.textContent = "0";
+    accuracyDisplay.textContent = "100%";
+    charactersDisplay.textContent = "0";
+
+    input.value = "";
+    input.disabled = false;
+
+    result.style.display = "none";
+
+    input.focus();
+}
+
+</script>
+
+</body>
+</html>
